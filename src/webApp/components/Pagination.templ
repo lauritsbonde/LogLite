@@ -1,0 +1,39 @@
+package components
+
+import "strconv"
+
+func isDisabled(disabled bool) string {
+  if disabled {
+    return "true"
+  }
+  return "false"
+}
+
+templ Pagination(currentPage int, totalPages int, swapId string) {
+  <div class="join flex w-[100dvw] justify-center mt-4">
+    <button 
+      class="join-item btn btn-sm btn-info"
+      hx-get="/api/paginatedLogs?page=1"
+      hx-target={swapId}
+      hx-swap="outerHtml"
+      disabled={isDisabled(currentPage == 1)}
+    >«</button>
+
+    for i := max(1, currentPage-2); i <= min(totalPages, currentPage+2); i++ {
+      <button 
+        class="join-item btn btn-sm {{if i == currentPage}}btn-primary{{else}}btn-info{{end}}"
+        hx-get={"/api/paginatedLogs?page=" + strconv.Itoa(i)}
+        hx-target={swapId}
+        hx-swap="outerHtml"
+      >{strconv.Itoa(i)}</button>
+    }
+
+    <button 
+      class="join-item btn btn-sm btn-info"
+      hx-get={"/api/paginatedLogs?page=" + strconv.Itoa(totalPages)}
+      hx-target={swapId}
+      hx-swap="outerHtml"
+      disabled={isDisabled(currentPage == totalPages)}
+    >»</button>
+  </div>
+}

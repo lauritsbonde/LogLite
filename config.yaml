@@ -1,0 +1,11 @@
+log_level: 'DEBUG' # "ALL" | "ERROR" | "WARNING" | "DEBUG" | "NONE"
+log_file: 'logs/app.log' # Log output file path (use 'stdout' for console output)
+max_connections: 10 # Maximum allowed connections to the ingestor
+
+ingestor:
+    protocol: 'UDP' # UDP or HTTP
+    port: 1053 # Port number for the ingestor to listen on
+
+database:
+    type: 'SQLite' # Supported: SQLite (future: MySQL, PostgreSQL, etc.)
+    sqlite_filepath: './db/myDB.db' # Path to SQLite database file

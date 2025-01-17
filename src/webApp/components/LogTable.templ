@@ -1,0 +1,65 @@
+package components
+
+import "github.com/lauritsbonde/LogLite/src/webApp/interfaces"
+import "strconv"
+
+
+func stringValue(strPtr *string) string {
+  if strPtr != nil {
+    return *strPtr
+  }
+  return "N/A"
+}
+
+func intPointerStr(val *int) string {
+    if val != nil {
+        return strconv.Itoa(*val)
+    }
+    return "N/A"
+}
+
+
+templ LogTable(logEntries []interfaces.LogEntry) {
+  <div class="overflow-x-auto px-10">
+    <table class="table table-xs" id="logtable">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Level</th>
+          <th>Message</th>
+          <th>Source</th>
+          <th>Method</th>
+          <th>Address</th>
+          <th>Length</th>
+          <th>Metadata</th>
+        </tr>
+      </thead>
+      <tbody>
+        for _, entry := range logEntries {
+          <tr>
+            <td>{entry.Timestamp.String()}</td>
+            <td>{entry.Level}</td>
+            <td>{entry.Message}</td>
+            <td>{stringValue(entry.Source)}</td>
+            <td>{stringValue(entry.Method)}</td>
+            <td>{stringValue(entry.Address)}</td>
+            <td>{intPointerStr(entry.Length)}</td>
+            <td>{stringValue(entry.Metadata)}</td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Timestamp</th>
+          <th>Level</th>
+          <th>Message</th>
+          <th>Source</th>
+          <th>Method</th>
+          <th>Address</th>
+          <th>Length</th>
+          <th>Metadata</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+}
