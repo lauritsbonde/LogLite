@@ -1,24 +1,22 @@
 package views
 
-import ("github.com/lauritsbonde/LogLite/src/webApp/components"
-"github.com/lauritsbonde/LogLite/src/webApp/interfaces")
+import ("github.com/lauritsbonde/LogLite/src/webApp/components")
 
 
-templ Index(logEntries []interfaces.LogEntry) {
+templ Index(noConfig bool) {
   <!DOCTYPE html>
   <html lang="en">
       @components.Header()
 
-      <body>
-        <div class="container mx-auto">
-          <h1 class="text-4xl text-center mt-10">LogLite</h1>
-          <h3 class="text-2xl text-center mt-2">Check your logs!</h3>
-        </div>
-
-        <div>
-          @components.LogTable(logEntries)
-          @components.Pagination(1, 100, "#logtable" )
-        </div>
+      <body class="min-h-[100dvh]">
+        @components.TopMenu()
+        <section class="py-2 px-4">
+          if noConfig {
+            @components.Setup()
+          } else {
+            <p>Config</p>
+          }
+        </section>
 
       </body>
 

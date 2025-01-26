@@ -4,12 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"strconv"
 	"time"
 
 	dbhandler "github.com/lauritsbonde/LogLite/src/dbHandler"
-	"github.com/lauritsbonde/LogLite/src/webApp/components"
 	"github.com/lauritsbonde/LogLite/src/webApp/interfaces"
 )
 
@@ -107,7 +104,7 @@ func ConvertToLogEntries(results []map[string]interface{}) ([]interfaces.LogEntr
 func GetLogs(dbhandler dbhandler.DBHandler) ([]interfaces.LogEntry, error) {
 	// Fetch data from the database
 	var m map[string]interface{} = make(map[string]interface{})
-	m["limit"] = 10
+	m["limit"] = 1
 	m["orderBy"] = "timestamp"
 	dbRes, err := dbhandler.Get("logs", m)
 	if err != nil {
@@ -123,46 +120,31 @@ func GetLogs(dbhandler dbhandler.DBHandler) ([]interfaces.LogEntry, error) {
 	return entries, nil
 }
 
-func GetPaginatedLogs(w http.ResponseWriter, r *http.Request, db dbhandler.DBHandler) {
-	println("get paginated logs")
-	// Parse query parameters
-	pageStr := r.URL.Query().Get("page")
-	limit := 10 // Items per page
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
+func optionalString(strPtr *string) string {
+	if strPtr != nil {
+		return *strPtr
 	}
+	return "N/A"
+}
 
-	offset := (page - 1) * limit
-
-	// Query conditions
-	m := map[string]interface{}{
-		"offset":  offset,
-		"limit":   limit,
-		"orderBy": "timestamp",
+func optionalInt(intPtr *int) int {
+	if intPtr != nil {
+		return *intPtr
 	}
+	return 0
+}
 
-	// Fetch data from the database
-	dbRes, err := db.Get("logs", m)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error getting logs: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Convert database results to LogEntries
-	entries, err := ConvertToLogEntries(dbRes)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting logs: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Render the LogTable component
-	component := components.LogTable(entries)
-
-	ctx := r.Context()
-
-	// Write the component to the HTTP response
-	if err := component.Render(ctx, w); err != nil {
-		http.Error(w, fmt.Sprintf("Error rendering logs: %v", err), http.StatusInternalServerError)
+func PrintLgos(logEntries []interfaces.LogEntry) {
+	for _, entry := range logEntries {
+		fmt.Printf("Timestamp: %s, Level: %s, Message: %s, Source: %s, Method: %s, Address: %s, Length: %d, Metadata: %s\n",
+			entry.Timestamp.String(),
+			entry.Level,
+			entry.Message,
+			optionalString(entry.Source),
+			optionalString(entry.Method),
+			optionalString(entry.Address),
+			optionalInt(entry.Length),
+			optionalString(entry.Metadata),
+		)
 	}
 }

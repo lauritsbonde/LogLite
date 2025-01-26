@@ -1,0 +1,39 @@
+package components
+
+import "strconv"
+import "github.com/lauritsbonde/LogLite/src/webApp/interfaces"
+
+
+func stringValue(strPtr *string) string {
+  if strPtr != nil {
+    return *strPtr
+  }
+  return "N/A"
+}
+
+func intPointerStr(val *int) string {
+    if val != nil {
+        return strconv.Itoa(*val)
+    }
+    return "N/A"
+}
+
+templ LogEntry(entry interfaces.LogEntry) {
+  <tr class="h-[10%] min-h-[14px]">
+    <td>{entry.Timestamp.String()}</td>
+    <td>{entry.Level}</td>
+    <td>{entry.Message}</td>
+    <td>{stringValue(entry.Source)}</td>
+    <td>{stringValue(entry.Method)}</td>
+    <td>{stringValue(entry.Address)}</td>
+    <td>{intPointerStr(entry.Length)}</td>
+    <td>{stringValue(entry.Metadata)}</td>
+  </tr>
+}
+
+// in htmx websockets the outher most element is removed - but a little strangely, this would not work with outer element being div??
+templ LiveLogEntry(entry interfaces.LogEntry){
+  <tbody hx-swap-oob="afterbegin:#live-log-rows">
+    @LogEntry(entry)
+  </tbody>
+}

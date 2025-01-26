@@ -8,18 +8,30 @@ import (
 
 // Config represents the overall configuration structure
 type Config struct {
-	LogLevel       string `mapstructure:"log_level"`       // Default: "DEBUG"
-	LogFile        string `mapstructure:"log_file"`        // Default: "logs/app.log"
-	MaxConnections int    `mapstructure:"max_connections"` // Default: 10
+	Version        string `mapstructure:"version"`         // Always present
+	LogLevel       string `mapstructure:"log_level"`       // Always present
+	LogFile        string `mapstructure:"log_file"`        // Always present
+	MaxConnections int    `mapstructure:"max_connections"` // Always present
 
-	Ingestor struct {
-		Protocol string `mapstructure:"protocol"` // Default: "UDP"
-		Port     int    `mapstructure:"port"`     // Default: 1053
-	} `mapstructure:"ingestor"`
+	// Log Handling (Send or Scrape)
+	LogHandler struct {
+		Mode string `mapstructure:"mode"` // "send" or "scrape"
 
+		// Send Configuration
+		Send struct {
+			Protocol string `mapstructure:"protocol"` // "HTTP" or "UDP"
+		} `mapstructure:"send"`
+
+		// Scrape Configuration
+		Scrape struct {
+			Type string `mapstructure:"type"` // "pure_docker", "docker_swarm", "kubernetes"
+		} `mapstructure:"scrape"`
+	} `mapstructure:"log_handler"`
+
+	// Database Configuration
 	Database struct {
-		Type           string `mapstructure:"type"`            // Default: "SQLite"
-		SQLiteFilepath string `mapstructure:"sqlite_filepath"` // Default: "./myDB.db"
+		Type           string `mapstructure:"type"`            // Currently only "SQLite"
+		SQLiteFilepath string `mapstructure:"sqlite_filepath"` // Required if Type is "SQLite"
 	} `mapstructure:"database"`
 }
 
@@ -32,12 +44,14 @@ func LoadConfig(configPath string) (Config, error) {
 	viper.SetConfigType("yaml")     // Specify file type
 
 	// Set default values for the config
+	viper.SetDefault("version", "1.0.0")
 	viper.SetDefault("log_level", "DEBUG")
 	viper.SetDefault("log_file", "logs/app.log")
 	viper.SetDefault("max_connections", 10)
 
-	viper.SetDefault("ingestor.protocol", "UDP")
-	viper.SetDefault("ingestor.port", 1053)
+	viper.SetDefault("log_handler.mode", "send") // Default to "send" mode
+	viper.SetDefault("log_handler.send.protocol", "UDP")
+	viper.SetDefault("log_handler.scrape.type", "pure_docker")
 
 	viper.SetDefault("database.type", "SQLite")
 	viper.SetDefault("database.sqlite_filepath", "./myDB.db")
@@ -63,14 +77,24 @@ func ValidateConfig(config Config) error {
 		return fmt.Errorf("invalid log_level: %s (must be one of ALL, ERROR, WARNING, DEBUG, NONE)", config.LogLevel)
 	}
 
-	// Validate protocol
-	if config.Ingestor.Protocol != "UDP" && config.Ingestor.Protocol != "HTTP" {
-		return fmt.Errorf("invalid protocol: %s (must be UDP or HTTP)", config.Ingestor.Protocol)
+	// Validate LogHandler mode
+	if config.LogHandler.Mode != "send" && config.LogHandler.Mode != "scrape" {
+		return fmt.Errorf("invalid log_handler mode: %s (must be send or scrape)", config.LogHandler.Mode)
 	}
 
-	// Validate port range
-	if config.Ingestor.Port < 1 || config.Ingestor.Port > 65535 {
-		return fmt.Errorf("invalid port: %d (must be between 1 and 65535)", config.Ingestor.Port)
+	// Validate send protocol
+	if config.LogHandler.Mode == "send" {
+		if config.LogHandler.Send.Protocol != "UDP" && config.LogHandler.Send.Protocol != "HTTP" {
+			return fmt.Errorf("invalid protocol: %s (must be UDP or HTTP)", config.LogHandler.Send.Protocol)
+		}
+	}
+
+	// Validate scrape type
+	if config.LogHandler.Mode == "scrape" {
+		validScrapeTypes := map[string]bool{"pure_docker": true, "docker_swarm": true, "kubernetes": true}
+		if !validScrapeTypes[config.LogHandler.Scrape.Type] {
+			return fmt.Errorf("invalid scrape type: %s (must be pure_docker, docker_swarm, or kubernetes)", config.LogHandler.Scrape.Type)
+		}
 	}
 
 	// Validate max connections
@@ -84,7 +108,7 @@ func ValidateConfig(config Config) error {
 	}
 
 	// Validate SQLite filepath
-	if config.Database.SQLiteFilepath == "" {
+	if config.Database.Type == "SQLite" && config.Database.SQLiteFilepath == "" {
 		return fmt.Errorf("sqlite_filepath cannot be empty")
 	}
 
@@ -94,13 +118,18 @@ func ValidateConfig(config Config) error {
 // PrintConfigTable prints the loaded configuration in a human-readable format
 func PrintConfigTable(config Config) {
 	fmt.Println("Loaded Configuration:")
+	fmt.Printf("  Version          : %s\n", config.Version)
 	fmt.Printf("  Log Level        : %s\n", config.LogLevel)
 	fmt.Printf("  Log File         : %s\n", config.LogFile)
 	fmt.Printf("  Max Connections  : %d\n", config.MaxConnections)
 
-	fmt.Println("  Ingestor:")
-	fmt.Printf("    Protocol       : %s\n", config.Ingestor.Protocol)
-	fmt.Printf("    Port           : %d\n", config.Ingestor.Port)
+	fmt.Println("  Log Handler:")
+	fmt.Printf("    Mode           : %s\n", config.LogHandler.Mode)
+	if config.LogHandler.Mode == "send" {
+		fmt.Printf("    Protocol       : %s\n", config.LogHandler.Send.Protocol)
+	} else if config.LogHandler.Mode == "scrape" {
+		fmt.Printf("    Type           : %s\n", config.LogHandler.Scrape.Type)
+	}
 
 	fmt.Println("  Database:")
 	fmt.Printf("    Type           : %s\n", config.Database.Type)

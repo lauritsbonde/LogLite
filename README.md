@@ -15,3 +15,20 @@ port: 8080
 log_file: 'logs/app.log'
 max_connections: 50
 ```
+
+## How to run?
+
+```bash
+air
+```
+
+and it runs a http server on: http://localhost:8080/
+
+It is fairly simple. If you want to manually build and run then:
+
+```bash
+go build .
+./LogLite
+```
+
+Also pretty simple

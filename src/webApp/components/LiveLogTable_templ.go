@@ -8,7 +8,7 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func Footer() templ.Component {
+func LiveLogTable() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -29,7 +29,7 @@ func Footer() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<footer class=\"fixed bottom-0 footer bg-base-200 text-base-content p-10\"><p class=\"text-center text-gray-500\">© 2024 LogLite</p></footer>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"overflow-x-auto px-10\"><h2 class=\"text-2xl font-bold mb-4\">Live Logs</h2><div class=\"h-full rounded-md border border-solid flex flex-col p-2\"><table class=\"table table-xs\" id=\"live-logtable\" hx-ext=\"ws\" ws-connect=\"/livelogs\"><thead class=\"sticky top-0\"><tr><th>Timestamp</th><th>Level</th><th>Message</th><th>Source</th><th>Method</th><th>Address</th><th>Length</th><th>Metadata</th></tr></thead></table><div class=\"overflow-y-scroll h-[30dvh]\"><table class=\"w-full table-fixed\"><tbody id=\"live-log-rows\"><!-- Rows will be dynamically loaded here --></tbody></table></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
