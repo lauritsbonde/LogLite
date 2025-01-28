@@ -7,76 +7,16 @@ templ Setup() {
 
       <div class="card-body p-8">
         <form class="text-center" hx-post="/setup">
-          <div class="text-left">
-            <h5 class="text-lg">How do you want to collect logs?</h5>
-            <div class="form-control">
-              <label class="label cursor-pointer">
-                <div class="tooltip tooltip-info" data-tip="Send logs using either HTTP or UDP, you have to alter your application">
-                  <span class="label-text">Send logs</span>
-                </div>
-                <input type="radio" name="collect-type" value="send" class="radio checked:bg-blue-500" hx-get="/ingest-options?type=send" hx-target="#log-type-options" hx-swap="innerHTML"/>
-              </label>
-
-              <label class="label cursor-pointer">
-                <div class="tooltip tooltip-info" data-tip="COMING SOON - Scrape your running applications for logs, you dont have to alter your application">
-                  <span class="label-text">Scrape logs</span>
-                </div>
-                <input type="radio" name="collect-type" value="scrape" class="radio checked:bg-green-500" disabled hx-get="/ingest-options?type=scrape" hx-target="#log-type-options" hx-swap="innerHTML"/>
-              </label>
-            </div>
-            <div id="log-type-options" class="pl-10">
-            <!-- HTMX will put options in here -->
-            </div>
-          </div>
-
-
-          <div class="divider"/>
-
-          <div class="text-left">
-            <h5 class="text-lg">What database do you want to use?</h5>
-            <label class="label cursor-pointer">
-              <div class="tooltip tooltip-info" data-tip="Use local SQLite database">
-                <span class="label-text">SQLite</span>
-              </div>
-              <input type="radio" name="database-type" value="SQLite" class="radio checked:bg-blue-500" hx-get="/db-options?type=sqlite" hx-target="#db-type-options" hx-swap="innerHTML"/>
-            </label>
-
-            <label class="label cursor-pointer">
-              <div class="tooltip tooltip-info" data-tip="COMING SOON - postgress or influxdb ">
-                <span class="label-text">Another one</span>
-              </div>
-              <input type="radio" name="collect-type" value="scrape" class="radio checked:bg-green-500" disabled hx-get="/db-options?type=different" hx-target="#db-type-options" hx-swap="innerHTML"/>
-            </label>
-
-            <div id="db-type-options" class="pl-10">
-            <!-- HTMX will put options in here -->
-            </div>
-          </div>
+          
+          @CollectLogsOptions()  <!-- Collect logs options -->
+          
+          <div class="divider" />
+          
+          @DatabaseOptions()  <!-- Database options -->
 
           <div class="divider" />
 
-          <div class="text-left">
-            <label class="form-control w-full max-w-xs">
-              <div class="label">
-                <span class="label-text">Log Level</span>
-              </div>
-              <select name="log-level" class="select select-bordered">
-                <option value="ALL">All</option>
-                <option value="ERROR">Error</option>
-                <option value="WARNING">Warning</option>
-                <option value="DEBUG">Debug</option>
-                <option value="NONE">None</option>
-              </select>
-            </label>
-
-            <label class="form-control w-full max-w-xs">
-              <div class="label">
-                <span class="label-text">Logfile Path</span>
-              </div>
-              <input type="text" name="logfile-path" value="./log" class="input input-bordered w-full max-w-xs" />
-            </label>
-
-          </div>
+          @LogLevelAndPath()  <!-- Log level and logfile path options -->
 
           <button class="btn btn-primary mt-2">Setup!</button>
 
@@ -86,7 +26,20 @@ templ Setup() {
   </section>
 }
 
-templ SendOptions() {
+templ CollectLogsOptions() {
+  <div class="text-left">
+    <h5 class="text-lg">How do you want to collect logs?</h5>
+    <div class="form-control">
+      @SendOption() <!-- Send logs options -->
+      @ScrapeOption() <!-- Scrape logs options -->
+    </div>
+    <div id="log-type-options" class="pl-10">
+      <!-- HTMX will put options in here -->
+    </div>
+  </div>
+}
+
+templ SendOption() {
   <label class="label cursor-pointer">
     <div class="tooltip tooltip-info" data-tip="Send to HTTP endpoint">
       <span class="label-text">HTTP endpoint</span>
@@ -109,8 +62,8 @@ templ SendOptions() {
   </label>
 }
 
-templ ScrapeOptions() {
-   <label class="label cursor-pointer">
+templ ScrapeOption() {
+  <label class="label cursor-pointer">
     <div class="tooltip tooltip-info" data-tip="Do you run pure Docker containers">
       <span class="label-text">Pure Docker containers</span>
     </div>
@@ -128,13 +81,59 @@ templ ScrapeOptions() {
     <div class="tooltip tooltip-info" data-tip="Do you run a Kubernetes setup">
       <span class="label-text">Kubernetes</span>
     </div>
-    <input type="radio" name="system-type" value="dockerSwarm" class="radio checked:bg-purple-500"/>
+    <input type="radio" name="system-type" value="kubernetes" class="radio checked:bg-purple-500"/>
   </label>
 }
 
-templ SQLiteOptions() {
-  <label class="label">
-    <span class="label-text">FilePath</span>
-    <input type="text" name="sqlite-path" value="./db" class="input input-bordered w-full max-w-xs" />
+templ DatabaseOptions() {
+  <div class="text-left">
+    <h5 class="text-lg">What database do you want to use?</h5>
+    @SQLiteOption()  <!-- SQLite option -->
+    @OtherDatabaseOption()  <!-- Other databases -->
+    <div id="db-type-options" class="pl-10">
+      <!-- HTMX will put options in here -->
+    </div>
+  </div>
+}
+
+templ SQLiteOption() {
+  <label class="label cursor-pointer">
+    <div class="tooltip tooltip-info" data-tip="Use local SQLite database">
+      <span class="label-text">SQLite</span>
+    </div>
+    <input type="radio" name="database-type" value="SQLite" class="radio checked:bg-blue-500" hx-get="/db-options?type=sqlite" hx-target="#db-type-options" hx-swap="innerHTML"/>
   </label>
+}
+
+templ OtherDatabaseOption() {
+  <label class="label cursor-pointer">
+    <div class="tooltip tooltip-info" data-tip="COMING SOON - PostgreSQL or InfluxDB">
+      <span class="label-text">Another one</span>
+    </div>
+    <input type="radio" name="database-type" value="other" class="radio checked:bg-green-500" disabled hx-get="/db-options?type=different" hx-target="#db-type-options" hx-swap="innerHTML"/>
+  </label>
+}
+
+templ LogLevelAndPath() {
+  <div class="text-left">
+    <label class="form-control w-full max-w-xs">
+      <div class="label">
+        <span class="label-text">Log Level</span>
+      </div>
+      <select name="log-level" class="select select-bordered">
+        <option value="ALL">All</option>
+        <option value="ERROR">Error</option>
+        <option value="WARNING">Warning</option>
+        <option value="DEBUG">Debug</option>
+        <option value="NONE">None</option>
+      </select>
+    </label>
+
+    <label class="form-control w-full max-w-xs">
+      <div class="label">
+        <span class="label-text">Logfile Path</span>
+      </div>
+      <input type="text" name="logfile-path" value="./log" class="input input-bordered w-full max-w-xs" />
+    </label>
+  </div>
 }

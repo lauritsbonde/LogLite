@@ -54,7 +54,7 @@ func Index(noConfig bool) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if noConfig {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div><h3>It appears you havent setup you logging</h3><p>Click <a href=\"/settings\" class=\"link\">here</a> to setup your logging</p></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex flex-col items-center justify-center p-8 space-y-4 text-center bg-info rounded-lg shadow-lg\"><h3 class=\"text-2xl font-semibold text-gray-800\">It looks like you haven't set up your logging yet.</h3><p class=\"text-lg text-gray-600\">Click <a href=\"/settings\" class=\"text-blue-500 underline hover:text-blue-700\">here</a> to get started with setting up your logging.</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
