@@ -1,0 +1,20 @@
+package views
+
+import "github.com/lauritsbonde/LogLite/src/webApp/components"
+
+templ Settings() {
+  <!DOCTYPE html>
+  <html lang="en">
+      @components.Header()
+
+      <body class="min-h-[100dvh] relative flex flex-col">
+        @components.TopMenu("/settings")
+        <main class="py-2 px-4 flex-grow">
+          @components.Setup()
+        </main>
+
+        @components.Footer()
+      </body>
+
+  </html>
+}

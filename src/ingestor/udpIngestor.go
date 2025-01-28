@@ -19,6 +19,7 @@ type UDPIngestor struct {
 
 // Start begins the UDP server
 func (u *UDPIngestor) Start() error {
+	println("Starting UDP Ingestor")
 	// Start listening on the specified UDP port
 	address := fmt.Sprintf(":%d", u.Port)
 	pc, err := net.ListenPacket("udp", address)

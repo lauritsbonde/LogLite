@@ -8,18 +8,21 @@ templ Index(noConfig bool) {
   <html lang="en">
       @components.Header()
 
-      <body class="min-h-[100dvh]">
-        @components.TopMenu()
-        <section class="py-2 px-4">
+      <body class="min-h-[100dvh] relative flex flex-col">
+        @components.TopMenu("/")
+        <main class="flex-grow py-2 px-4">
           if noConfig {
-            @components.Setup()
+            <div>
+              <h3>It appears you havent setup you logging</h3>
+              <p>Click <a href="/settings" class="link">here</a> to setup your logging</p>
+            </div>
           } else {
             <p>Config</p>
           }
-        </section>
+        </main>
 
+        @components.Footer()
       </body>
 
-      @components.Footer()
   </html>
 }

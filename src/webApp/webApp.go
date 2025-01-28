@@ -3,8 +3,8 @@ package webapp
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/a-h/templ"
 	confighandler "github.com/lauritsbonde/LogLite/src/configHandler"
@@ -14,38 +14,113 @@ import (
 )
 
 type WebApp struct {
-	mu        sync.RWMutex // this lock does not handle any db synchronization, it is used for not changing the dbhandler while reads are ongoing
 	DBHandler dbhandler.DBHandler
-	SettingsChan chan string
+	
+	SettingsChan chan ConfigMessage
 	Configuration *confighandler.Config
 }
 
-// SetDBHandler updates the dbHandler safely with a write lock.
-func (app *WebApp) SetDBHandler(handler dbhandler.DBHandler) {
-	app.mu.Lock()
-	defer app.mu.Unlock()
-	app.DBHandler = handler
+type ConfigMessage struct {
+	NewConfig *confighandler.Config
+	ResponseCh chan string
 }
 
-// GetDBHandler retrieves the dbHandler safely with a read lock.
-func (app *WebApp) GetDBHandler() dbhandler.DBHandler {
-	app.mu.RLock()
-	defer app.mu.RUnlock()
-	return app.DBHandler
+
+func (app *WebApp) indexHandler(w http.ResponseWriter, r *http.Request) {
+	// Render logs with templ.Handler - if ther version is empty, then there is no config
+	templ.Handler(views.Index(app.Configuration.Version == "")).ServeHTTP(w, r)
 }
 
-func (app *WebApp) indexHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Safely get the current dbHandler
-		dbHandler := app.GetDBHandler()
+func (app *WebApp) settingsHandler(w http.ResponseWriter, r *http.Request) {
+	// Render logs with templ.Handler - if ther version is empty, then there is no config
+	templ.Handler(views.Settings()).ServeHTTP(w, r)
+}
 
-		if dbHandler == nil {
-			log.Print("No db\n")
+func (app *WebApp) setupHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Parse form values
+	collectType := r.FormValue("collect-type") // send || scrape
+	var sendConfig confighandler.Send
+	var scrapeConfig confighandler.Scrape
+
+	switch collectType {
+	case "send":
+		protocol := r.FormValue("endpoint-type") // http || udp
+		port := r.FormValue("ingest-port")
+		portParsed, err := strconv.Atoi(port)
+		if err != nil {
+			log.Printf("Error parsing port: %v\n", err) // Log the error but continue execution
+		} 
+		sendConfig = confighandler.Send{
+			Protocol: protocol,
+			Port: portParsed,
 		}
+	case "scrape":
+		scrapeType := r.FormValue("scrape-type") // pure_docker || docker_swarm || kubernetes
+		scrapeConfig = confighandler.Scrape{
+			Type: scrapeType,
+		}
+	default:
+		http.Error(w, "Invalid collect-type value. Must be 'send' or 'scrape'.", http.StatusBadRequest)
+		return
+	}
 
-		// Render logs with templ.Handler - if ther version is empty, then there is no config
-		templ.Handler(views.Index(app.Configuration.Version == "")).ServeHTTP(w, r)
-	})
+	db := r.FormValue("database-type") // Required
+	file := r.FormValue("sqlite-path")
+	if db == "SQLite" && file == "" {
+		http.Error(w, "sqlite-path is required when database-type is SQLite", http.StatusBadRequest)
+		return
+	}
+
+	logLevel := r.FormValue("log-level")
+	logFile := r.FormValue("logfile-path")
+
+	// Create a new config object
+	newConfig := confighandler.Config{
+		Version:        "1.0.0",
+		LogLevel:       logLevel,
+		LogFile:        logFile,
+		MaxConnections: 100, // Example default value
+		LogHandler: confighandler.LogHandler{
+			Mode:   collectType,
+			Send:   sendConfig,
+			Scrape: scrapeConfig,
+		},
+		Database: confighandler.Database{
+			Type:           db,
+			SQLiteFilepath: file,
+		},
+	}
+
+	err = confighandler.ValidateConfig(newConfig)
+	if err != nil {
+		log.Printf("error validating new config %v \n", err)
+		return
+	}
+
+
+	// Send newConfig to the main thread
+	responseCh := make(chan string)
+	app.SettingsChan <- ConfigMessage{
+		NewConfig:  &newConfig,
+		ResponseCh: responseCh,
+	}
+
+	// Wait for the response
+	response := <-responseCh
+	if strings.HasPrefix(response, "Error") {
+		http.Error(w, response, http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with success
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Configuration setup successfully: " + response))
 }
 
 func assetHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,52 +133,37 @@ func assetHandler(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, fullPath)
 }
 
+func middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Example: Log the request details
+			log.Printf("Request: %s %s", r.Method, r.URL.Path)
+
+			
+			// Call the next handler
+			next.ServeHTTP(w, r)
+	})
+}
+
+// Middleware wrapper for http.HandlerFunc
+func middlewareFunc(next http.HandlerFunc) http.Handler {
+	return middleware(http.HandlerFunc(next))
+}
+
+// Modify RunWebApp to apply middleware
 func (app *WebApp) RunWebApp() error {
-	// Register the index "/" route - The special wildcard {$} matches only the end of the URL. For example, the pattern "/{$}" matches only the path "/", whereas the pattern "/" matches every path.
-	http.Handle("GET /{$}", app.indexHandler())
-
-	http.HandleFunc("GET /asset/", assetHandler)
-
-	http.HandleFunc("GET /ingest-options", handlers.CollectType)
-	http.HandleFunc("GET /db-options", handlers.DBType)
-
-	http.HandleFunc("POST /setup", func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		collectType := (r.FormValue("collect-type")) // send || scrape
-		var subtype string
-
-		switch collectType {
-			case "send":
-				subtype = r.FormValue("endpoint-type") // http || udp
-			case "scrap":
-				http.Error(w, "not implemented yet", http.StatusNotImplemented)
-		}
-		
-		db := r.FormValue("database-type")
-		file := r.FormValue("sqlite-path")
-
-		log.Printf("%s, %s, %s, %s\n", collectType, subtype, db, file)
-
-
-	})
-
-	// Register the "/livelogs" route
-	http.HandleFunc("GET /livelogs", func(w http.ResponseWriter, r *http.Request) {
-		dbHandler := app.GetDBHandler()
-
-		if dbHandler == nil {
-			http.Error(w, "No database configured. Please configure the database.", http.StatusServiceUnavailable)
-			return
-		}
-
-		handlers.LiveLogs(w, r, dbHandler)
-	})
+	// Wrap routes with middleware
+	http.Handle("/{$}", middleware(http.HandlerFunc(app.indexHandler)))
+	http.Handle("/asset/", middlewareFunc(assetHandler))
+	http.Handle("/ingest-options", middlewareFunc(handlers.CollectType))
+	http.Handle("/db-options", middlewareFunc(handlers.DBType))
+	http.Handle("/setup", middleware(http.HandlerFunc(app.setupHandler)))
+	http.Handle("/settings", middlewareFunc(http.HandlerFunc(app.settingsHandler)))
 
 	// Start the HTTP server
-	return http.ListenAndServe(":8080", nil)
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: http.DefaultServeMux, // Explicitly set DefaultServeMux as the handler
+	}
+
+	return server.ListenAndServe()
 }

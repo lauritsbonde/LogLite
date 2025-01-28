@@ -38,7 +38,7 @@ templ Setup() {
               <div class="tooltip tooltip-info" data-tip="Use local SQLite database">
                 <span class="label-text">SQLite</span>
               </div>
-              <input type="radio" name="database-type" value="sqlite" class="radio checked:bg-blue-500" hx-get="/db-options?type=sqlite" hx-target="#db-type-options" hx-swap="innerHTML"/>
+              <input type="radio" name="database-type" value="SQLite" class="radio checked:bg-blue-500" hx-get="/db-options?type=sqlite" hx-target="#db-type-options" hx-swap="innerHTML"/>
             </label>
 
             <label class="label cursor-pointer">
@@ -61,11 +61,11 @@ templ Setup() {
                 <span class="label-text">Log Level</span>
               </div>
               <select name="log-level" class="select select-bordered">
-                <option value="all">All</option>
-                <option value="error">Error</option>
-                <option value="warning">Warning</option>
-                <option value="debug">Debug</option>
-                <option value="none">None</option>
+                <option value="ALL">All</option>
+                <option value="ERROR">Error</option>
+                <option value="WARNING">Warning</option>
+                <option value="DEBUG">Debug</option>
+                <option value="NONE">None</option>
               </select>
             </label>
 
@@ -91,14 +91,21 @@ templ SendOptions() {
     <div class="tooltip tooltip-info" data-tip="Send to HTTP endpoint">
       <span class="label-text">HTTP endpoint</span>
     </div>
-    <input type="radio" name="endpoint-type" value="http" class="radio checked:bg-blue-500"/>
+    <input type="radio" name="endpoint-type" value="HTTP" class="radio checked:bg-blue-500"/>
   </label>
 
   <label class="label cursor-pointer">
     <div class="tooltip tooltip-info" data-tip="Send to UDP endpoint">
       <span class="label-text">UDP endpoint</span>
     </div>
-    <input type="radio" name="endpoint-type" value="udp" class="radio checked:bg-green-500"/>
+    <input type="radio" name="endpoint-type" value="UDP" class="radio checked:bg-green-500"/>
+  </label>
+
+  <label class="label">
+    <div class="tooltip tooltip-info" data-tip="Pick the port to run the ingestor on">
+      <span class="label-text">Ingest port</span>
+    </div>
+    <input type="text" name="ingest-port" value="2020" class="input input-bordered max-w-xs input-sm" />
   </label>
 }
 

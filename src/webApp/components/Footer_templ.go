@@ -29,7 +29,7 @@ func Footer() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<footer class=\"fixed bottom-0 footer bg-base-200 text-base-content p-10\"><p class=\"text-center text-gray-500\">© 2024 LogLite</p></footer>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<footer class=\"footer bg-base-200 text-base-content p-10\"><p class=\"text-center text-gray-500\">© 2024 LogLite</p></footer>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -8,31 +8,32 @@ import (
 
 // Config represents the overall configuration structure
 type Config struct {
-	Version        string `mapstructure:"version"`         // Always present
-	LogLevel       string `mapstructure:"log_level"`       // Always present
-	LogFile        string `mapstructure:"log_file"`        // Always present
-	MaxConnections int    `mapstructure:"max_connections"` // Always present
+	Version        string     `mapstructure:"version"`         // Always present
+	LogLevel       string     `mapstructure:"log_level"`       // Always present
+	LogFile        string     `mapstructure:"log_file"`        // Always present
+	MaxConnections int        `mapstructure:"max_connections"` // Always present
+	LogHandler     LogHandler `mapstructure:"log_handler"`     // Log handling configuration
+	Database       Database   `mapstructure:"database"`        // Database configuration
+}
 
-	// Log Handling (Send or Scrape)
-	LogHandler struct {
-		Mode string `mapstructure:"mode"` // "send" or "scrape"
+type LogHandler struct {
+	Mode   string `mapstructure:"mode"`   // "send" or "scrape"
+	Send   Send   `mapstructure:"send"`   // Send configuration
+	Scrape Scrape `mapstructure:"scrape"` // Scrape configuration
+}
 
-		// Send Configuration
-		Send struct {
-			Protocol string `mapstructure:"protocol"` // "HTTP" or "UDP"
-		} `mapstructure:"send"`
+type Send struct {
+	Protocol string `mapstructure:"protocol"` // "HTTP" or "UDP"
+	Port     int    `mapstructure:"port"`     // number
+}
 
-		// Scrape Configuration
-		Scrape struct {
-			Type string `mapstructure:"type"` // "pure_docker", "docker_swarm", "kubernetes"
-		} `mapstructure:"scrape"`
-	} `mapstructure:"log_handler"`
+type Scrape struct {
+	Type string `mapstructure:"type"` // "pure_docker", "docker_swarm", "kubernetes"
+}
 
-	// Database Configuration
-	Database struct {
-		Type           string `mapstructure:"type"`            // Currently only "SQLite"
-		SQLiteFilepath string `mapstructure:"sqlite_filepath"` // Required if Type is "SQLite"
-	} `mapstructure:"database"`
+type Database struct {
+	Type           string `mapstructure:"type"`            // Currently only "SQLite"
+	SQLiteFilepath string `mapstructure:"sqlite_filepath"` // Required if Type is "SQLite"
 }
 
 // LoadConfig loads the configuration from a file and applies defaults
@@ -51,6 +52,7 @@ func LoadConfig(configPath string) (Config, error) {
 
 	viper.SetDefault("log_handler.mode", "send") // Default to "send" mode
 	viper.SetDefault("log_handler.send.protocol", "UDP")
+	viper.SetDefault("log_handler.send.port", 2020)
 	viper.SetDefault("log_handler.scrape.type", "pure_docker")
 
 	viper.SetDefault("database.type", "SQLite")
@@ -127,6 +129,7 @@ func PrintConfigTable(config Config) {
 	fmt.Printf("    Mode           : %s\n", config.LogHandler.Mode)
 	if config.LogHandler.Mode == "send" {
 		fmt.Printf("    Protocol       : %s\n", config.LogHandler.Send.Protocol)
+		fmt.Printf("    Port       : %d\n", config.LogHandler.Send.Port)
 	} else if config.LogHandler.Mode == "scrape" {
 		fmt.Printf("    Type           : %s\n", config.LogHandler.Scrape.Type)
 	}
