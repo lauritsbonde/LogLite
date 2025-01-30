@@ -14,9 +14,9 @@ func CollectType(w http.ResponseWriter, r *http.Request) {
 
 	switch collectType {
 		case "send":
-			templ.Handler(components.SendOptions()).ServeHTTP(w, r)
+			templ.Handler(components.SendOption()).ServeHTTP(w, r)
 		case "scrape":
-			templ.Handler(components.ScrapeOptions()).ServeHTTP(w, r)
+			templ.Handler(components.ScrapeOption()).ServeHTTP(w, r)
 		default:
 			http.Error(w, "Invalid or missing 'type' parameter", http.StatusBadRequest)
 	}
@@ -29,7 +29,7 @@ func DBType(w http.ResponseWriter, r *http.Request) {
 
 	switch dbType {
 		case "sqlite":
-			templ.Handler(components.SQLiteOptions()).ServeHTTP(w, r)
+			templ.Handler(components.SQLiteOption()).ServeHTTP(w, r)
 		default:
 			http.Error(w, "Invalid or missing 'type' parameter", http.StatusBadRequest)
 	}

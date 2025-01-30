@@ -103,6 +103,13 @@ func (app *WebApp) setupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// save the config to a file
+	err = confighandler.SaveConfig(newConfig, "./etc/config.yaml")
+	if err != nil {
+		log.Printf("error saving new config %v \n", err)
+		return
+	}
+
 
 	// Send newConfig to the main thread
 	responseCh := make(chan string)
@@ -158,6 +165,18 @@ func (app *WebApp) RunWebApp() error {
 	http.Handle("/db-options", middlewareFunc(handlers.DBType))
 	http.Handle("/setup", middleware(http.HandlerFunc(app.setupHandler)))
 	http.Handle("/settings", middlewareFunc(http.HandlerFunc(app.settingsHandler)))
+
+	// Register the "/livelogs" route
+	http.HandleFunc("GET /livelogs", func(w http.ResponseWriter, r *http.Request) {
+		log.Print("livelogs")
+		if app.DBHandler == nil {
+			log.Print("No database configured")
+			http.Error(w, "No database configured. Please configure the database.", http.StatusServiceUnavailable)
+			return
+		}
+
+		handlers.LiveLogs(w, r, app.DBHandler)
+	})
 
 	// Start the HTTP server
 	server := &http.Server{

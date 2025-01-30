@@ -9,6 +9,7 @@ import (
 	"github.com/lauritsbonde/LogLite/src/appmanager"
 	confighandler "github.com/lauritsbonde/LogLite/src/configHandler"
 	dbhandler "github.com/lauritsbonde/LogLite/src/dbHandler"
+	demodata "github.com/lauritsbonde/LogLite/src/demoIngestor"
 	"github.com/lauritsbonde/LogLite/src/ingestor"
 	webapp "github.com/lauritsbonde/LogLite/src/webApp"
 )
@@ -17,7 +18,7 @@ var loadedConfig confighandler.Config
 
 func init(){
 	// Command-line flag for config file
-	configPathFlag := flag.String("config", "", "Path to the configuration file")
+	configPathFlag := flag.String("config", "./etc/config.yaml", "Path to the configuration file")
 	flag.Parse()
 
 	configpath := *configPathFlag
@@ -30,7 +31,8 @@ func init(){
 	// Load the configuration
 	config, err := confighandler.LoadConfig(configpath)
 	if err != nil {
-		log.Fatalf("Error loading config: %v\n", err)
+		log.Printf("Error loading configuration: %v\n", err)
+		return
 	}
 
 	// Print loaded configuration (for debugging)
@@ -100,6 +102,7 @@ func messageHandler(webApp *webapp.WebApp, appManager *appmanager.AppManager, in
 
 		// Update the WebApp configuration
 		webApp.Configuration = msg.NewConfig
+		webApp.DBHandler = dbHandler
 
 		// Respond to the sender
 		msg.ResponseCh <- "Configuration applied successfully"
@@ -121,25 +124,6 @@ func main() {
 	// var dbHandler dbhandler.DBHandler
 	log.Printf("version: %d\n", len(loadedConfig.Version))
 
-	if len(loadedConfig.Version) == 0 {
-		// adding the webapp
-		wg.Add(1)
-		webApp := &webapp.WebApp{
-			DBHandler: nil,
-			SettingsChan: make(chan webapp.ConfigMessage, 1),
-			Configuration: &confighandler.Config{},
-		}
-
-		go messageHandler(webApp, appManager, ingestorReady)
-
-		go func() {
-			defer wg.Done()
-			if err := webApp.RunWebApp(); err != nil {
-				fmt.Printf("Error starting web server: %v\n", err)
-			}
-		}()
-	}
-
 	go func() {
 		defer wg.Done()
 
@@ -147,6 +131,49 @@ func main() {
 		println("Starting ingestor")
 		if err := ing.Start(); err != nil {
 			log.Fatalf("Error starting ingestor: %v", err)
+		} else {
+			log.Println("Ingestor started")
+			demodata.IngestDemoData(appManager.DBHandler, 10)
+		}
+	}()
+
+	// adding the webapp
+	wg.Add(1)
+	webApp := &webapp.WebApp{
+		DBHandler: nil,
+		SettingsChan: make(chan webapp.ConfigMessage, 1),
+		Configuration: &confighandler.Config{},
+	}
+
+	if len(loadedConfig.Version) == 0 {
+		go messageHandler(webApp, appManager, ingestorReady)
+	} else {
+		webApp.Configuration = &loadedConfig
+		// Apply the appropriate DBHandler
+		dbhandler, err := dbhandler.NewDBHandler(&loadedConfig)
+		if err != nil {
+			log.Fatalf("Error initializing DBHandler: %v\n", err)
+		}
+
+		webApp.DBHandler = dbhandler
+
+		// Apply the appropriate Ingestor using the NewIngestor function
+		ingestor, err := ingestor.NewIngestor(&loadedConfig, dbhandler)
+		if err != nil {
+			log.Fatalf("Error initializing Ingestor: %v\n", err)
+		}
+
+		// Dynamically bind the DBHandler and Ingestor to the AppManager
+		appManager.DBHandler = dbhandler
+		appManager.Ingestor = ingestor
+
+		ingestorReady <- ingestor
+	}
+
+	go func() {
+		defer wg.Done()
+		if err := webApp.RunWebApp(); err != nil {
+			fmt.Printf("Error starting web server: %v\n", err)
 		}
 	}()
 

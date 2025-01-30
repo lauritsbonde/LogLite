@@ -17,7 +17,7 @@ templ Index(noConfig bool) {
               <p class="text-lg text-gray-600">Click <a href="/settings" class="text-blue-500 underline hover:text-blue-700">here</a> to get started with setting up your logging.</p>
             </div>
           } else {
-            <p>Config</p>
+            @components.LiveLogTable()
           }
         </main>
 

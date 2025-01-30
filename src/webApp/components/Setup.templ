@@ -27,14 +27,24 @@ templ Setup() {
 }
 
 templ CollectLogsOptions() {
-  <div class="text-left">
+   <div class="text-left">
     <h5 class="text-lg">How do you want to collect logs?</h5>
     <div class="form-control">
-      @SendOption() <!-- Send logs options -->
-      @ScrapeOption() <!-- Scrape logs options -->
+      <label class="label cursor-pointer">
+        <div class="tooltip tooltip-info" data-tip="Send logs using either HTTP or UDP, you have to alter your application">
+          <span class="label-text">Send logs</span>
+        </div>
+        <input type="radio" name="collect-type" value="send" class="radio checked:bg-blue-500" hx-get="/ingest-options?type=send" hx-target="#log-type-options" hx-swap="innerHTML"/>
+      </label>
+      <label class="label cursor-pointer">
+        <div class="tooltip tooltip-info" data-tip="COMING SOON - Scrape your running applications for logs, you dont have to alter your application">
+          <span class="label-text">Scrape logs</span>
+        </div>
+        <input type="radio" name="collect-type" value="scrape" class="radio checked:bg-green-500" disabled hx-get="/ingest-options?type=scrape" hx-target="#log-type-options" hx-swap="innerHTML"/>
+      </label>
     </div>
-    <div id="log-type-options" class="pl-10">
-      <!-- HTMX will put options in here -->
+    <div id="log-type-options" class="pl-6">
+    <!-- HTMX will put options in here -->
     </div>
   </div>
 }
@@ -88,29 +98,28 @@ templ ScrapeOption() {
 templ DatabaseOptions() {
   <div class="text-left">
     <h5 class="text-lg">What database do you want to use?</h5>
-    @SQLiteOption()  <!-- SQLite option -->
-    @OtherDatabaseOption()  <!-- Other databases -->
+    <label class="label cursor-pointer">
+      <div class="tooltip tooltip-info" data-tip="Use local SQLite database">
+        <span class="label-text">SQLite</span>
+      </div>
+      <input type="radio" name="database-type" value="SQLite" class="radio checked:bg-blue-500" hx-get="/db-options?type=sqlite" hx-target="#db-type-options" hx-swap="innerHTML"/>
+    </label>
+    <label class="label cursor-pointer">
+      <div class="tooltip tooltip-info" data-tip="COMING SOON - postgress or influxdb ">
+        <span class="label-text">Another one</span>
+      </div>
+      <input type="radio" name="collect-type" value="scrape" class="radio checked:bg-green-500" disabled hx-get="/db-options?type=different" hx-target="#db-type-options" hx-swap="innerHTML"/>
+    </label>
     <div id="db-type-options" class="pl-10">
-      <!-- HTMX will put options in here -->
+    <!-- HTMX will put options in here -->
     </div>
   </div>
 }
 
 templ SQLiteOption() {
-  <label class="label cursor-pointer">
-    <div class="tooltip tooltip-info" data-tip="Use local SQLite database">
-      <span class="label-text">SQLite</span>
-    </div>
-    <input type="radio" name="database-type" value="SQLite" class="radio checked:bg-blue-500" hx-get="/db-options?type=sqlite" hx-target="#db-type-options" hx-swap="innerHTML"/>
-  </label>
-}
-
-templ OtherDatabaseOption() {
-  <label class="label cursor-pointer">
-    <div class="tooltip tooltip-info" data-tip="COMING SOON - PostgreSQL or InfluxDB">
-      <span class="label-text">Another one</span>
-    </div>
-    <input type="radio" name="database-type" value="other" class="radio checked:bg-green-500" disabled hx-get="/db-options?type=different" hx-target="#db-type-options" hx-swap="innerHTML"/>
+  <label class="label">
+    <span class="label-text">FilePath</span>
+    <input type="text" name="sqlite-path" value="./etc/db" class="input input-bordered w-full max-w-xs" />
   </label>
 }
 

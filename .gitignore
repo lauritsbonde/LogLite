@@ -48,3 +48,5 @@ go.work
 tmp
 
 ./db
+/etc
+/etc/*

@@ -2,6 +2,8 @@ package confighandler
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/viper"
 )
@@ -38,6 +40,10 @@ type Database struct {
 
 // LoadConfig loads the configuration from a file and applies defaults
 func LoadConfig(configPath string) (Config, error) {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return Config{}, fmt.Errorf("config file does not exist: %s", configPath)
+	}
+
 	var config Config
 
 	// Use Viper to read the config file
@@ -137,4 +143,46 @@ func PrintConfigTable(config Config) {
 	fmt.Println("  Database:")
 	fmt.Printf("    Type           : %s\n", config.Database.Type)
 	fmt.Printf("    SQLite Filepath: %s\n", config.Database.SQLiteFilepath)
+}
+
+func SaveConfig(config Config, filePath string) error {
+	// Ensure the directory exists before writing the file
+	dir := filepath.Dir(filePath)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return fmt.Errorf("error creating config directory: %v", err)
+	}
+
+	// Open (or create) the file
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return fmt.Errorf("error opening config file: %v", err)
+	}
+	defer file.Close()
+
+	// Set the file path where Viper should write the config
+	viper.SetConfigFile(filePath)
+	viper.SetConfigType("yaml") // Explicitly set the config type
+
+	// Set the configuration values
+	viper.Set("version", config.Version)
+	viper.Set("log_level", config.LogLevel)
+	viper.Set("log_file", config.LogFile)
+	viper.Set("max_connections", config.MaxConnections)
+
+	viper.Set("log_handler.mode", config.LogHandler.Mode)
+	viper.Set("log_handler.send.protocol", config.LogHandler.Send.Protocol)
+	viper.Set("log_handler.send.port", config.LogHandler.Send.Port)
+	viper.Set("log_handler.scrape.type", config.LogHandler.Scrape.Type)
+
+	viper.Set("database.type", config.Database.Type)
+	viper.Set("database.sqlite_filepath", config.Database.SQLiteFilepath)
+
+	// Write the config file
+	if err := viper.WriteConfigAs(filePath); err != nil {
+		return fmt.Errorf("error writing config file: %v", err)
+	}
+
+	fmt.Printf("Configuration saved to %s\n", filePath)
+	return nil
 }

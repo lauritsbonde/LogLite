@@ -82,23 +82,7 @@ func CollectLogsOptions() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"text-left\"><h5 class=\"text-lg\">How do you want to collect logs?</h5><div class=\"form-control\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = SendOption().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<!-- Send logs options -->")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = ScrapeOption().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<!-- Scrape logs options --></div><div id=\"log-type-options\" class=\"pl-10\"><!-- HTMX will put options in here --></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"text-left\"><h5 class=\"text-lg\">How do you want to collect logs?</h5><div class=\"form-control\"><label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Send logs using either HTTP or UDP, you have to alter your application\"><span class=\"label-text\">Send logs</span></div><input type=\"radio\" name=\"collect-type\" value=\"send\" class=\"radio checked:bg-blue-500\" hx-get=\"/ingest-options?type=send\" hx-target=\"#log-type-options\" hx-swap=\"innerHTML\"></label> <label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"COMING SOON - Scrape your running applications for logs, you dont have to alter your application\"><span class=\"label-text\">Scrape logs</span></div><input type=\"radio\" name=\"collect-type\" value=\"scrape\" class=\"radio checked:bg-green-500\" disabled hx-get=\"/ingest-options?type=scrape\" hx-target=\"#log-type-options\" hx-swap=\"innerHTML\"></label></div><div id=\"log-type-options\" class=\"pl-6\"><!-- HTMX will put options in here --></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -127,7 +111,7 @@ func SendOption() templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Send to HTTP endpoint\"><span class=\"label-text\">HTTP endpoint</span></div><input type=\"radio\" name=\"endpoint-type\" value=\"HTTP\" class=\"radio checked:bg-blue-500\"></label> <label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Send to UDP endpoint\"><span class=\"label-text\">UDP endpoint</span></div><input type=\"radio\" name=\"endpoint-type\" value=\"UDP\" class=\"radio checked:bg-green-500\"></label> <label class=\"label\"><div class=\"tooltip tooltip-info\" data-tip=\"Pick the port to run the ingestor on\"><span class=\"label-text\">Ingest port</span></div><input type=\"text\" name=\"ingest-port\" value=\"2020\" class=\"input input-bordered max-w-xs input-sm\"></label>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Send to HTTP endpoint\"><span class=\"label-text\">HTTP endpoint</span></div><input type=\"radio\" name=\"endpoint-type\" value=\"HTTP\" class=\"radio checked:bg-blue-500\"></label> <label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Send to UDP endpoint\"><span class=\"label-text\">UDP endpoint</span></div><input type=\"radio\" name=\"endpoint-type\" value=\"UDP\" class=\"radio checked:bg-green-500\"></label> <label class=\"label\"><div class=\"tooltip tooltip-info\" data-tip=\"Pick the port to run the ingestor on\"><span class=\"label-text\">Ingest port</span></div><input type=\"text\" name=\"ingest-port\" value=\"2020\" class=\"input input-bordered max-w-xs input-sm\"></label>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -156,7 +140,7 @@ func ScrapeOption() templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Do you run pure Docker containers\"><span class=\"label-text\">Pure Docker containers</span></div><input type=\"radio\" name=\"system-type\" value=\"docker\" class=\"radio checked:bg-blue-500\"></label> <label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Do you run a Docker Swarm setup\"><span class=\"label-text\">Docker Swarm</span></div><input type=\"radio\" name=\"system-type\" value=\"dockerSwarm\" class=\"radio checked:bg-green-500\"></label> <label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Do you run a Kubernetes setup\"><span class=\"label-text\">Kubernetes</span></div><input type=\"radio\" name=\"system-type\" value=\"kubernetes\" class=\"radio checked:bg-purple-500\"></label>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Do you run pure Docker containers\"><span class=\"label-text\">Pure Docker containers</span></div><input type=\"radio\" name=\"system-type\" value=\"docker\" class=\"radio checked:bg-blue-500\"></label> <label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Do you run a Docker Swarm setup\"><span class=\"label-text\">Docker Swarm</span></div><input type=\"radio\" name=\"system-type\" value=\"dockerSwarm\" class=\"radio checked:bg-green-500\"></label> <label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Do you run a Kubernetes setup\"><span class=\"label-text\">Kubernetes</span></div><input type=\"radio\" name=\"system-type\" value=\"kubernetes\" class=\"radio checked:bg-purple-500\"></label>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -185,23 +169,7 @@ func DatabaseOptions() templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"text-left\"><h5 class=\"text-lg\">What database do you want to use?</h5>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = SQLiteOption().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<!-- SQLite option -->")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = OtherDatabaseOption().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<!-- Other databases --><div id=\"db-type-options\" class=\"pl-10\"><!-- HTMX will put options in here --></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"text-left\"><h5 class=\"text-lg\">What database do you want to use?</h5><label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Use local SQLite database\"><span class=\"label-text\">SQLite</span></div><input type=\"radio\" name=\"database-type\" value=\"SQLite\" class=\"radio checked:bg-blue-500\" hx-get=\"/db-options?type=sqlite\" hx-target=\"#db-type-options\" hx-swap=\"innerHTML\"></label> <label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"COMING SOON - postgress or influxdb \"><span class=\"label-text\">Another one</span></div><input type=\"radio\" name=\"collect-type\" value=\"scrape\" class=\"radio checked:bg-green-500\" disabled hx-get=\"/db-options?type=different\" hx-target=\"#db-type-options\" hx-swap=\"innerHTML\"></label><div id=\"db-type-options\" class=\"pl-10\"><!-- HTMX will put options in here --></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -230,36 +198,7 @@ func SQLiteOption() templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"Use local SQLite database\"><span class=\"label-text\">SQLite</span></div><input type=\"radio\" name=\"database-type\" value=\"SQLite\" class=\"radio checked:bg-blue-500\" hx-get=\"/db-options?type=sqlite\" hx-target=\"#db-type-options\" hx-swap=\"innerHTML\"></label>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-func OtherDatabaseOption() templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var7 == nil {
-			templ_7745c5c3_Var7 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<label class=\"label cursor-pointer\"><div class=\"tooltip tooltip-info\" data-tip=\"COMING SOON - PostgreSQL or InfluxDB\"><span class=\"label-text\">Another one</span></div><input type=\"radio\" name=\"database-type\" value=\"other\" class=\"radio checked:bg-green-500\" disabled hx-get=\"/db-options?type=different\" hx-target=\"#db-type-options\" hx-swap=\"innerHTML\"></label>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<label class=\"label\"><span class=\"label-text\">FilePath</span> <input type=\"text\" name=\"sqlite-path\" value=\"./etc/db\" class=\"input input-bordered w-full max-w-xs\"></label>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -283,12 +222,12 @@ func LogLevelAndPath() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var8 == nil {
-			templ_7745c5c3_Var8 = templ.NopComponent
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"text-left\"><label class=\"form-control w-full max-w-xs\"><div class=\"label\"><span class=\"label-text\">Log Level</span></div><select name=\"log-level\" class=\"select select-bordered\"><option value=\"ALL\">All</option> <option value=\"ERROR\">Error</option> <option value=\"WARNING\">Warning</option> <option value=\"DEBUG\">Debug</option> <option value=\"NONE\">None</option></select></label> <label class=\"form-control w-full max-w-xs\"><div class=\"label\"><span class=\"label-text\">Logfile Path</span></div><input type=\"text\" name=\"logfile-path\" value=\"./log\" class=\"input input-bordered w-full max-w-xs\"></label></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"text-left\"><label class=\"form-control w-full max-w-xs\"><div class=\"label\"><span class=\"label-text\">Log Level</span></div><select name=\"log-level\" class=\"select select-bordered\"><option value=\"ALL\">All</option> <option value=\"ERROR\">Error</option> <option value=\"WARNING\">Warning</option> <option value=\"DEBUG\">Debug</option> <option value=\"NONE\">None</option></select></label> <label class=\"form-control w-full max-w-xs\"><div class=\"label\"><span class=\"label-text\">Logfile Path</span></div><input type=\"text\" name=\"logfile-path\" value=\"./log\" class=\"input input-bordered w-full max-w-xs\"></label></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

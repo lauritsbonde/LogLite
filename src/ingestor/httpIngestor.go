@@ -14,20 +14,25 @@ type HTTPIngestor struct {
 }
 
 func (h *HTTPIngestor) Start() error {
-	// Use a custom handler for this server - to not use the gloabl http.DefaultServeMux
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "Hello from HTTP Ingestor!")
+			fmt.Fprintf(w, "Hello from HTTP Ingestor!")
 	})
 
-	// Create a custom HTTP server on port h.Port
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", h.Port),
-		Handler: mux, // Use the custom ServeMux for this server
+			Addr:    fmt.Sprintf(":%d", h.Port),
+			Handler: mux,
 	}
 
 	log.Printf("HTTP server is running on port %d\n", h.Port)
-	return server.ListenAndServe()
+
+	go func() {
+			if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+					log.Fatalf("HTTP server error: %v", err)
+			}
+	}()
+
+	return nil // This allows the Start function to return immediately
 }
 
 func (h *HTTPIngestor) Stop() error {
